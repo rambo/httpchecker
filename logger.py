@@ -28,9 +28,9 @@ class logger:
 
     def init_db(self):
         """Initializes the database schema"""
-        self.cursor.execute("CREATE TABLE sessions (id INTEGER PRIMARY KEY ASC, time TIMESTAMP DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')), groupkey TEXT, url TEXT);")
+        self.cursor.execute("CREATE TABLE sessions (id INTEGER PRIMARY KEY ASC, time TIMESTAMP DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')), groupkey TEXT, url TEXT, allok BOOLEAN);")
         # The timestamps on these tables are basically denormalized just in case we wish to do optimized time based searches in them.
-        self.cursor.execute("CREATE TABLE status (sessionid INTEGER NOT NULL, time TIMESTAMP DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')), responsetime INTEGER, httpstatus INTEGER, contentstatus BOOLEAN, FOREIGN KEY(sessionid) REFERENCES sessions(id));")
+        self.cursor.execute("CREATE TABLE status (sessionid INTEGER NOT NULL, time TIMESTAMP DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')), responsetime INTEGER, ioerror INTEGER, httpstatus INTEGER, contentstatus BOOLEAN, FOREIGN KEY(sessionid) REFERENCES sessions(id));")
         self.cursor.execute("CREATE TABLE contenterror (sessionid INTEGER NOT NULL, time TIMESTAMP DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')), testregex TEXT, FOREIGN KEY(sessionid) REFERENCES sessions(id));")
         self.cursor.execute("CREATE TABLE contenthistory (sessionid INTEGER NOT NULL, time TIMESTAMP DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')), html TEXT, FOREIGN KEY(sessionid) REFERENCES sessions(id));")
         self.connection.commit()
@@ -41,9 +41,18 @@ class logger:
         self.connection.commit()
         return self.cursor.lastrowid
 
+    def set_session_allok(self, sessionid, ok):
+        self.cursor.execute("UPDATE sessions SET allok=? WHERE id=? ", (ok,sessionid))
+        self.connection.commit()
+
     def log_status(self, sessionid, responsetime, httpstatus, contentstatus):
         """Log the general status for a given URL in a given session"""
         self.cursor.execute("INSERT INTO status (sessionid, responsetime, httpstatus, contentstatus) VALUES (?,?,?,?);", (sessionid, responsetime, httpstatus, contentstatus))
+        self.connection.commit()
+
+    def log_ioerror(self, sessionid, responsetime, ioerror):
+        """Log an IOError for a given URL in a given session"""
+        self.cursor.execute("INSERT INTO status (sessionid, responsetime, ioerror) VALUES (?,?,?);", (sessionid, responsetime, ioerror))
         self.connection.commit()
 
     def log_content(self, sessionid, html):
@@ -78,7 +87,13 @@ class logger_wrapper:
         if not self.sessionid:
             raise RuntimeError("You must start with a new_session() call")
         self.logger.log_status(self.sessionid, responsetime, httpstatus, contentstatus)
-    
+
+    def log_ioerror(self, responsetime, ioerror):
+        """Wraps same method from logger with automatic sessionid handling"""
+        if not self.sessionid:
+            raise RuntimeError("You must start with a new_session() call")
+        self.logger.log_ioerror(self.sessionid, responsetime, ioerror)
+
     def log_content(self, html):
         """Wraps same method from logger with automatic sessionid handling"""
         if not self.sessionid:
@@ -90,6 +105,12 @@ class logger_wrapper:
         if not self.sessionid:
             raise RuntimeError("You must start with a new_session() call")
         self.logger.log_error(self.sessionid, testregex)
+
+    def set_session_allok(self, ok):
+        """Wraps same method from logger with automatic sessionid handling"""
+        if not self.sessionid:
+            raise RuntimeError("You must start with a new_session() call")
+        self.logger.set_session_allok(self.sessionid, ok)
 
     def get_cursor(self):
         """Shorthand for getting the SQLite cursor from the main logger"""

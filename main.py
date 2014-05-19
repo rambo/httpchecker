@@ -65,15 +65,16 @@ class main:
         """Checks specific url in given group"""
         self.logger.new_session(groupkey, urlkey)
         group = self.config[groupkey]
-        content_ok = None
         f = self.fetcher
-        if f.get(urlkey):
+        if f.get(urlkey) > 0:
             body = f.body
             self.logger.log_content(body)
             if DEBUG:
                 print "Fetched %s ok" % urlkey
             # The group is dict, so the url has content checks, do them.
-            if isinstance(group, dict):
+            if (  isinstance(group, dict)
+                and group[urlkey]
+                and len(group[urlkey]) > 0):
                 content_ok = True
                 for regex in group[urlkey]:
                     if not self.regexes.has_key(regex):
@@ -83,11 +84,23 @@ class main:
                     if not self.regexes[regex].search(body):
                         content_ok = False
                         self.logger.log_error(regex)
-            self.logger.log_status(int(f.ttfb), f.httpcode, content_ok)
+                self.logger.log_status(int(f.ttfb), f.httpcode, content_ok)
+                self.logger.set_session_allok(content_ok)
+            else:
+                # No content checks
+                self.logger.log_status(int(f.ttfb), f.httpcode, None)
+                self.logger.set_session_allok(True)
         else:
-            if DEBUG:
-                print "Fetching %s failed, code %d" % (urlkey, f.httpcode)
-            self.logger.log_status(int(f.tte), f.httpcode, content_ok)
+            # Fetch failed, check the reason
+            if f.ioerrno:
+                if DEBUG:
+                    print "Fetching %s failed, IOError %d" % (urlkey, f.ioerrno)
+                self.logger.log_ioerror(int(f.tte), f.ioerrno)
+            else:
+                if DEBUG:
+                    print "Fetching %s failed, HTTPError %d" % (urlkey, f.httpcode)
+                self.logger.log_status(int(f.tte), f.httpcode, None)
+            self.logger.set_session_allok(False)
 
     def reload(self, *args):
         """Used to reload the config (and if we have """

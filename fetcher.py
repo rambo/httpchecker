@@ -14,6 +14,7 @@ class fetcher():
         self.started = None
         self.httpcode = None
         self.body = None
+        self.ioerrno = None
 
     def init_time(self):
         """Initializes the timing variables"""
@@ -24,16 +25,21 @@ class fetcher():
         self.ttlb = None
 
     def get(self, url):
-        """Wraps get_instrumented for a bit of error handling"""
+        """Wraps get_instrumented for a bit of error handling, returns 1 for success, 0 for failure and -1 for I/O error"""
         self.httpcode = None
+        self.ioerrno = None
         try:
             self.get_instrumented(url)
         except urllib2.HTTPError, e:
             self.tte = (time.time() - self.started) * 1000
             self.httpcode = e.code
-            return False
+            return 0
+        except urllib2.URLError, e:
+            self.tte = (time.time() - self.started) * 1000
+            self.ioerrno = e.reason.errno
+            return -1
         else:
-            return True
+            return 1
 
     def get_instrumented(self, url):
         """Gets contents of a given URL, and does a bit of instrumentation in between"""

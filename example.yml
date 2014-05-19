@@ -3,10 +3,14 @@ example:
   http://example.com/:
     - examples\s+in\s+documents
     - Example\s+Domain
-another:
+failures:
   http://example.com/:
     - Does\s+not\s+\contain\s+this
   http://example.com/foobar:
-"yet another":
+"yet another list format":
   - http://example.com/
   - http://example.com/foobar
+refused:
+  - http://nexenta.hurttakallio.net/
+dnsfail:
+  - http://foobar.hurttakallio.net/
