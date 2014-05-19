@@ -56,6 +56,9 @@ class logger:
         self.cursor.execute("INSERT INTO contenterror (sessionid, testregex) VALUES (?,?);", (sessionid, testregex))
         self.connection.commit()
 
+    def close(self):
+        """Close the connection"""
+        self.connection.close()
 
 
 class logger_wrapper:
@@ -90,6 +93,10 @@ class logger_wrapper:
     def get_cursor(self):
         """Shorthand for getting the SQLite cursor from the main logger"""
         return self.logger.cursor
+
+    def close(self):
+        """Close the connection"""
+        self.logger.close()
 
 
 if __name__ == '__main__':
