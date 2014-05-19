@@ -1,6 +1,6 @@
 # First level keys are for grouping, second level keys are the URLs and under them the content rules which are regular expressions, *matching is case sensitive*
 example:
-  - http://example.com/
+  http://example.com/:
     - examples\s+in\s+documents
     - Example\s+Domain
     - Does\s+not\s+\contain\s+this

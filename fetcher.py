@@ -7,7 +7,9 @@ import time
 
 class fetcher():
     def __init__(self):
+        # Make a custom opener so we can time the response times
         self.opener = urllib2.build_opener()
+        # Make sure the variables are initialized correctly
         self.init_time()
         self.started = None
         self.httpcode = None
