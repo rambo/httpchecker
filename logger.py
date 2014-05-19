@@ -58,6 +58,7 @@ class logger:
 
     def close(self):
         """Close the connection"""
+        self.connection.commit()
         self.connection.close()
 
 
