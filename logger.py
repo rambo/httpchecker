@@ -16,6 +16,7 @@ sqlite3.register_adapter(datetime.datetime, lambda dt: dt.strftime("%Y-%m-%d %H:
 sqlite3.register_converter("TIMESTAMP", lambda s: datetime.datetime.strptime(s.ljust(26,"0"), "%Y-%m-%d %H:%M:%S.%f"))
 
 class logger:
+    """Logs our status' etc to a sqlite database"""
     def __init__(self, logfilename):
         call_init_db = False
         if not os.path.exists(logfilename):
@@ -54,7 +55,41 @@ class logger:
         """Logs a content check error, basically just to tell us which of the content check failed"""
         self.cursor.execute("INSERT INTO contenterror (sessionid, testregex) VALUES (?,?);", (sessionid, testregex))
         self.connection.commit()
-        
+
+
+
+class logger_wrapper:
+    """Wrapper that keeps track of the sessionid"""
+    def __init__(self, logfilename):
+        self.logger = logger(logfilename)
+        self.sessionid = None
+    
+    def new_session(self, groupname, url):
+        """Starts a new session and keeps track of the ID for furher requests"""
+        self.sessionid = self.logger.new_session(groupname, url)
+        return self.sessionid
+
+    def log_status(self, responsetime, httpstatus, contentstatus):
+        """Wraps same method from logger with automatic sessionid handling"""
+        if not self.sessionid:
+            raise RuntimeError("You must start with a new_session() call")
+        self.logger.log_status(self.sessionid, responsetime, httpstatus, contentstatus)
+    
+    def log_content(self, html):
+        """Wraps same method from logger with automatic sessionid handling"""
+        if not self.sessionid:
+            raise RuntimeError("You must start with a new_session() call")
+        self.logger.log_content(self.sessionid, html)
+
+    def log_error(self, testregex):
+        """Wraps same method from logger with automatic sessionid handling"""
+        if not self.sessionid:
+            raise RuntimeError("You must start with a new_session() call")
+        self.logger.log_error(self.sessionid, testregex)
+
+    def get_cursor(self):
+        """Shorthand for getting the SQLite cursor from the main logger"""
+        return self.logger.cursor
 
 
 if __name__ == '__main__':
