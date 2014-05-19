@@ -132,8 +132,10 @@ class main:
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print "usage\n  main.py configfile\n"
+        print "usage\n  main.py configfile [check_interval]\n"
         sys.exit(1)
+    if len(sys.argv) == 3:
+        CHECK_INTERVAL = int(sys.argv[2])
     m = main(sys.argv[1])
     try:
         m.run()
