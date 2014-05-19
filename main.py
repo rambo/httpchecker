@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
 from exceptions import NotImplementedError,RuntimeError
-import sys,os,signal
+import sys,os,signal,time
 import yaml
 import re
 import logger, fetcher
 
 DEBUG = True
+CHECK_INTERVAL = 15
 
 class main:
     def __init__(self, configfile):
@@ -28,17 +29,26 @@ class main:
 
     def run(self):
         """Starts the mainloop"""
-        # We have no mainloop yet, iterate once...
-        self.iterate()
+        # Trivial mainloop implementation just to avoid a library dependency to do it properly.
+        self.keep_running = True
+        self.last_iteration_time = None
+        while self.keep_running:
+            self.iterate()
+            # Yield processor
+            time.sleep(0)
+        self.logger.close()
 
-    def quit(self):
+    def quit(self, *args):
         """Quits the mainloop"""
-        NotImplementedError("No mainloop yet")
-        #self.mainloop.quit()
+        self.keep_running = False
 
     def iterate(self):
-        """Runs one iteration, eg all the checks once"""
-        self.check_all()
+        """Runs one iteration, eg all the checks once every CHECK_INTERVAL seconds"""
+        if (   not self.last_iteration_time
+            or time.time() - self.last_iteration_time > CHECK_INTERVAL):
+            self.last_iteration_time = time.time()
+            self.check_all()
+        return
 
     def check_all(self):
         """Checks all urls in all groups"""
@@ -78,10 +88,12 @@ class main:
                 print "Fetching %s failed, code %d" % (urlkey, f.httpcode)
             self.logger.log_status(int(f.tte), f.httpcode, content_ok)
 
-    def reload(self):
+    def reload(self, *args):
         """Used to reload the config (and if we have """
         if self.load_config():
             self.precompile_regexes()
+            if DEBUG:
+                print "*** Config reloaded ***"
         else:
             # PONDER: report the error somehow ?
             pass
@@ -96,6 +108,9 @@ class main:
 #                    print "Group %s looks to contain only urls, value %s" % (group, repr(self.config[group]))
                 continue
             for url in self.config[group].keys():
+                if (   not self.config[group][url]
+                    or len(self.config[group][url]) == 0):
+                    continue
                 for regex in self.config[group][url]:
                     try:
                         self.regexes[regex] = re.compile(regex)
