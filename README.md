@@ -4,7 +4,7 @@ Reads a YAML config file for urls to check against given rules, then checks them
 
 # Installing
 
-  1. Prepare a new virtualenv
+  1. Prepare and activate a new virtualenv
   3. unpack the archive
   2. pip install -r requirements.txt
 
