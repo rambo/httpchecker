@@ -38,9 +38,13 @@ The grouping key from the configuration file
 
 The URL this session refers to (in case the same URL has for example multiple content checks)
 
+### sessions.allok
+
+High-level view whether this session was fine or not.
+
 ## status
 
-The high-level status table, shows response times, http error codes and if there were any issues with content checks
+The general status table, shows response times, http/io error codes and if there were any issues with content checks
 
 ### status.sessionid
 
@@ -54,9 +58,13 @@ A separate timestamp for the status entry, to avoid JOINs if we want to just do 
 
 Response time in milliseconds 
 
+### status.ioerror
+
+If there was an IO error the code is stored here, NULL if not applicable.
+
 ### status.httpstatus
 
-HTTP status code
+HTTP status code, NULL if not applicable (In case of IOError for example)
 
 ## status.contentstatus
 

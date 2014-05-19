@@ -40,9 +40,13 @@
 
 <p>The URL this session refers to (in case the same URL has for example multiple content checks)</p>
 
+<h3>sessions.allok</h3>
+
+<p>High-level view whether this session was fine or not.</p>
+
 <h2>status</h2>
 
-<p>The high-level status table, shows response times, http error codes and if there were any issues with content checks</p>
+<p>The general status table, shows response times, http/io error codes and if there were any issues with content checks</p>
 
 <h3>status.sessionid</h3>
 
@@ -56,9 +60,13 @@
 
 <p>Response time in milliseconds </p>
 
+<h3>status.ioerror</h3>
+
+<p>If there was an IO error the code is stored here, NULL if not applicable.</p>
+
 <h3>status.httpstatus</h3>
 
-<p>HTTP status code</p>
+<p>HTTP status code, NULL if not applicable (In case of IOError for example)</p>
 
 <h2>status.contentstatus</h2>
 
