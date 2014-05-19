@@ -44,6 +44,7 @@ class fetcher():
         self.tto = (time.time() - self.started) * 1000
         self.body = resp.read(1)
         self.ttfb = (time.time() - self.started) * 1000
+        self.httpcode = resp.getcode()
         self.body += resp.read()
         self.ttlb = (time.time() - self.started) * 1000
 
