@@ -4,11 +4,11 @@ import sys,os
 from exceptions import NotImplementedError,RuntimeError
 import sqlite3
 # Decimal recipe from http://stackoverflow.com/questions/6319409/how-to-convert-python-decimal-to-sqlite-numeric
-import decimal
+#import decimal
 # Register the adapter
-sqlite3.register_adapter(decimal.Decimal, lambda d: str(d))
+#sqlite3.register_adapter(decimal.Decimal, lambda d: str(d))
 # Register the converter
-sqlite3.register_converter("NUMERIC", lambda s: decimal.Decimal(s))
+#sqlite3.register_converter("NUMERIC", lambda s: decimal.Decimal(s))
 # Register converter&adapter for datetime in the same way
 import datetime
 sqlite3.register_adapter(datetime.datetime, lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S.%f")[:23])
