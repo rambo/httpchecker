@@ -3,8 +3,10 @@ example:
   http://example.com/:
     - examples\s+in\s+documents
     - Example\s+Domain
-    - Does\s+not\s+\contain\s+this
 another:
+  http://example.com/:
+    - Does\s+not\s+\contain\s+this
+  http://example.com/foobar:
+"yet another":
   - http://example.com/
   - http://example.com/foobar
-
