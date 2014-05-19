@@ -29,7 +29,7 @@ class fetcher():
         try:
             self.get_instrumented(url)
         except urllib2.HTTPError, e:
-            self.tte = time.time() - self.started
+            self.tte = (time.time() - self.started) * 1000
             self.httpcode = e.code
             return False
         else:
@@ -41,11 +41,11 @@ class fetcher():
         request = urllib2.Request(url)
         self.init_time()
         resp = self.opener.open(request)
-        self.tto = time.time() - self.started
+        self.tto = (time.time() - self.started) * 1000
         self.body = resp.read(1)
-        self.ttfb = time.time() - self.started
+        self.ttfb = (time.time() - self.started) * 1000
         self.body += resp.read()
-        self.ttlb = time.time() - self.started
+        self.ttlb = (time.time() - self.started) * 1000
 
 
 if __name__ == '__main__':
