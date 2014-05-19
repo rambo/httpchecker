@@ -69,6 +69,7 @@ class main:
         f = self.fetcher
         if f.get(urlkey):
             body = f.body
+            self.logger.log_content(body)
             if DEBUG:
                 print "Fetched %s ok" % urlkey
             # The group is dict, so the url has content checks, do them.
